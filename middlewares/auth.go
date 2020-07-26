@@ -22,8 +22,6 @@ func Authenticate(c *gin.Context) (*models.JwtClaims, error) {
 		return nil, err
 	}
 
-	fmt.Println("hello")
-	fmt.Println(authHeader.TokenHeader)
 	splitStrings := strings.Split(authHeader.TokenHeader, " ")
 	if len(splitStrings) != 2 {
 		return nil, errors.New("error: Bad Request")

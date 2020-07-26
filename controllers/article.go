@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,18 @@ type GetArticlesArgs struct {
 }
 
 // GetAllArticles get all articles
+// @summary Get All Articles
+// @description get all articles using filter
+// @tags Article
+// @accept json
+// @produce json
+// @param limit query string false "limit nums of articles"
+// @param offset query string false "offset of articles"
+// @param tag query string false "tag of articles"
+// @param author query string false "author of articles"
+// @param favorited query string false "articles favorted by"
+// @router /articles [get]
+// @success 200 {array} models.Article
 func GetAllArticles(c *gin.Context) {
 	var args GetArticlesArgs
 	args.Limit = 20
@@ -40,7 +53,7 @@ func GetAllArticles(c *gin.Context) {
 	articleCollection := client.Database("conduit").Collection("articles")
 	userCollection := client.Database("conduit").Collection("users")
 
-	var query bson.M
+	var query bson.D = bson.D{}
 	var author models.User
 	if args.Author != "" {
 		err := userCollection.FindOne(ctx, bson.M{"username": args.Author}).Decode(&author)
@@ -50,10 +63,10 @@ func GetAllArticles(c *gin.Context) {
 			})
 			return
 		}
-		query["author"] = author.ID
+		query = append(query, primitive.E{Key: "author", Value: author.ID})
 	}
 	if args.Tag != "" {
-		query["tagList"] = bson.M{"$in": []string{args.Tag}}
+		query = append(query, primitive.E{Key: "tagList", Value: bson.D{{Key: "$in", Value: []string{args.Tag}}}})
 	}
 	if args.Favorited != "" {
 		err := userCollection.FindOne(ctx, bson.M{"username": args.Author}).Decode(&author)
@@ -63,7 +76,7 @@ func GetAllArticles(c *gin.Context) {
 			})
 			return
 		}
-		query["_id"] = bson.M{"$in": author.Favorites}
+		query = append(query, primitive.E{Key: "_id", Value: bson.D{{Key: "$in", Value: author.Favorites}}})
 	}
 
 	matchStage := bson.D{{Key: "$match", Value: query}}
@@ -72,15 +85,22 @@ func GetAllArticles(c *gin.Context) {
 	skipStage := bson.D{{Key: "$skip", Value: args.Offset}}
 	limitStage := bson.D{{Key: "$limit", Value: args.Limit}}
 	cursor, err := articleCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, unwindStage, skipStage, limitStage})
-	counts, err := articleCollection.CountDocuments(ctx, query)
+	var articles []models.ArticleWithAuthor
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	var articles []models.ArticleWithAuthor
 	err = cursor.All(ctx, &articles)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	counts, err := articleCollection.CountDocuments(ctx, query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -169,7 +189,7 @@ func GetFeedArticles(c *gin.Context) {
 		return
 	}
 
-	var query bson.M
+	var query bson.M=make(primitive.M)
 	query["author"] = bson.M{
 		"$in": loginUser.Following,
 	}

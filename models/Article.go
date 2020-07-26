@@ -21,18 +21,18 @@ type ArticleBase struct {
 
 // Article article struct
 type Article struct {
-	ArticleBase
-	Author primitive.ObjectID `bson:"author"`
+	ArticleBase `bson:",inline"`
+	Author      primitive.ObjectID `bson:"author"`
 }
 
 // ArticleWithAuthor article with author
 type ArticleWithAuthor struct {
-	ArticleBase
-	Author User `bson:"author"`
+	ArticleBase `bson:",inline"`
+	Author      User `bson:"author"`
 }
 
 // ArticleJSON article json
 type ArticleJSON struct {
-	ArticleBase
+	ArticleBase `bson:",inline"`
 	Author Profile `json:"author"`
 }

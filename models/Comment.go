@@ -16,18 +16,18 @@ type CommentBase struct {
 
 // Comment comment struct
 type Comment struct {
-	CommentBase
+	CommentBase `bson:",inline"`
 	Author primitive.ObjectID `bson:"author" json:"author"`
 }
 
 // CommentWithAuthor comment with author
 type CommentWithAuthor struct {
-	CommentBase
+	CommentBase `bson:",inline"`
 	Author User `bson:"author"`
 }
 
 // CommentJSON comment with json
 type CommentJSON struct {
-	CommentBase
+	CommentBase `bson:",inline"`
 	Author Profile `json:"author"`
 }

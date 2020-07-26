@@ -1,0 +1,77 @@
+basePath: /api
+definitions:
+  models.Article:
+    properties:
+      author:
+        type: string
+      body:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      favoritesCount:
+        type: integer
+      id:
+        type: string
+      slug:
+        type: string
+      tagList:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+info:
+  contact:
+    email: jameslahm17@gmail.com
+    name: API Support
+    url: http://github.com/jameslahm
+  description: Conduit Server Rest API
+  license: {}
+  termsOfService: http://swagger.io/terms
+  title: Conduit Server
+  version: "1.0"
+paths:
+  /articles:
+    get:
+      consumes:
+      - application/json
+      description: get all articles using filter
+      parameters:
+      - description: limit nums of articles
+        in: query
+        name: limit
+        type: string
+      - description: offset of articles
+        in: query
+        name: offset
+        type: string
+      - description: tag of articles
+        in: query
+        name: tag
+        type: string
+      - description: author of articles
+        in: query
+        name: author
+        type: string
+      - description: articles favorted by
+        in: query
+        name: favorited
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Article'
+            type: array
+      summary: Get All Articles
+      tags:
+      - Article
+swagger: "2.0"

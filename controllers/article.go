@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -189,7 +188,7 @@ func GetFeedArticles(c *gin.Context) {
 		return
 	}
 
-	var query bson.M=make(primitive.M)
+	var query bson.M = make(primitive.M)
 	query["author"] = bson.M{
 		"$in": loginUser.Following,
 	}
